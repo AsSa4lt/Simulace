@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
+using System.Security.Cryptography;
 
 namespace simulace
 {
@@ -112,6 +113,11 @@ namespace simulace
             obsluhuje = false;
             fronta = new List<Zakaznik>();
             model.VsechnaOddeleni.Add(this);
+        }
+
+        public int fronta_oddeleni()
+        {
+            return fronta.Count;
         }
         public void ZaradDoFronty(Zakaznik zak)
         {
@@ -348,21 +354,28 @@ namespace simulace
                     }
             }
         }
+
+        public int count_of_cekatele()
+        {
+            return naklad.Count();
+        }
     }
     public class Zakaznik : Proces
     {
         private int trpelivost;
+        private int poradove_cislo;
         private int prichod;
         private List<string> Nakupy;
         public Zakaznik(Model model, string popis)
         {
             this.model = model;
             string[] popisy = popis.Split(Proces.mezery, StringSplitOptions.RemoveEmptyEntries);
-            this.ID = popisy[0];
-            this.prichod = int.Parse(popisy[1]);
-            this.trpelivost = int.Parse(popisy[2]);
+            this.poradove_cislo = int.Parse(popisy[0]);
+            this.ID = popisy[1];
+            this.prichod = int.Parse(popisy[2]);
+            this.trpelivost = int.Parse(popisy[3]);
             Nakupy = new List<string>();
-            for (int i = 3; i < popisy.Length; i++)
+            for (int i = 4; i < popisy.Length; i++)
             {
                 Nakupy.Add(popisy[i]);
             }
@@ -379,12 +392,59 @@ namespace simulace
                     // ma nakoupeno
                     {
                         if (patro == 0)
-                            log("-------------- odch�z�"); // nic, konci
+                            log("-------------- odchozi"); // nic, konci
                         else
                             model.vytah.PridejDoFronty(patro, 0, this);
                     }
                     else
                     {
+                        if (poradove_cislo % 3 == 2){
+                            //nakup be stejnem patre
+                            for (int i = 0; i < Nakupy.Count; i++)
+                            {
+                                if (OddeleniPodleJmena(Nakupy[i]).patro == patro)
+                                {
+                                    var temp = Nakupy[0];
+                                    Nakupy[0] = Nakupy[i];
+                                    Nakupy[i] = temp;
+                                    break;
+                                }
+                            }
+                            
+                            }else if (poradove_cislo % 3 == 0){
+                            //hleda nejmensi frontu
+
+                            List<int> fronty = new List<int>();
+                            List<string> oddeleni = new List<string>();
+
+                            for (int i = 0; i < Nakupy.Count(); i++)
+                            {
+                                if (OddeleniPodleJmena(Nakupy[i]).patro == patro)
+                                {
+                                    fronty.Append(OddeleniPodleJmena(Nakupy[i]).fronta_oddeleni());
+                                    oddeleni.Append(Nakupy[i]);
+                                }
+                                else
+                                {
+                                    int res = OddeleniPodleJmena(Nakupy[i]).fronta_oddeleni() + model.vytah.count_of_cekatele();
+                                    fronty.Append(res);
+                                    oddeleni.Append(Nakupy[i]);
+                                }
+                            }
+
+                            int min = 0;
+                            for (int i = 0; i < fronty.Count; i++)
+                            {
+                                if (fronty[min] > fronty[i])
+                                {
+                                    min = i;
+                                }
+                            }
+                            var temp = Nakupy[0];
+                            Nakupy[0] = Nakupy[min];
+                            Nakupy[min] = temp;
+
+                        }
                         Oddeleni odd = OddeleniPodleJmena(Nakupy[0]);
                         int pat = odd.patro;
                         if (pat == patro) // to oddeleni je v patre, kde prave jsem
@@ -456,7 +516,7 @@ namespace simulace
                 int arrivalTime = rnd.Next(0, 601); // 0 to 10 hours
                 int patience = rnd.Next(1, 181); // 1 to 3 hours
                 int numPurchases = rnd.Next(1, 21);
-                string popis = name + " " + arrivalTime + " " + patience + " ";
+                string popis = i + " " + name + " " + arrivalTime + " " + patience + " ";
                 int count_of_oddeleni = rnd.Next(0, 21);
                 string zakaznik_oddeleni = "";
                 while (count_of_oddeleni != 0)
@@ -535,13 +595,14 @@ namespace simulace
             }
 
 
-            using (StreamWriter writer = new StreamWriter("result.txt"))
+            using (StreamWriter writer = new StreamWriter("resultSuperschopnost.txt"))
             {
                 // write each line to the file
                 for (int j = 0; j <= 50; j++)
                 {
                     int people = 1 + j * 10;
-                    writer.WriteLine("For " + people + " people time is: " + result[j]);
+                    //writer.WriteLine("For " + people + " people " + "time is: " + result[j]);
+                    writer.WriteLine(people + " " + result[j]);
                 }
             }
             Console.ReadLine();
