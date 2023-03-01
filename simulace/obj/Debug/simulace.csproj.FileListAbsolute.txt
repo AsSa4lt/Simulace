@@ -1,0 +1,6 @@
+/Users/rostyslav/Desktop/university/prog 2/simulace/simulace/bin/Debug/simulace.exe
+/Users/rostyslav/Desktop/university/prog 2/simulace/simulace/bin/Debug/simulace.pdb
+/Users/rostyslav/Desktop/university/prog 2/simulace/simulace/obj/Debug/simulace.csproj.AssemblyReference.cache
+/Users/rostyslav/Desktop/university/prog 2/simulace/simulace/obj/Debug/simulace.csproj.CoreCompileInputs.cache
+/Users/rostyslav/Desktop/university/prog 2/simulace/simulace/obj/Debug/simulace.exe
+/Users/rostyslav/Desktop/university/prog 2/simulace/simulace/obj/Debug/simulace.pdb
